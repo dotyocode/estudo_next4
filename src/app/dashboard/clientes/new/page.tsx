@@ -26,7 +26,7 @@ export default async function CadastroCliente() {
           <h1 className="text-3xl font-bold">Novo cliente</h1>
         </div>
 
-        <FormClient />
+        <FormClient userId={session.user.id}/>
       </main>
     </Container>
   );

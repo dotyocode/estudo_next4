@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Chamados from "./components/chamados";
+import prismaCliente from "@/lib/prisma"
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions);
@@ -11,6 +12,16 @@ export default async function Dashboard() {
   if (!session || !session.user) {
     redirect("/");
   }
+
+  const chamados = await prismaCliente.chamados.findMany({
+    where: {
+      userId: session.user.id,
+      status: "ABERTO"
+    },
+    include: {
+      cliente: true
+    }
+  })
 
   return (
     <Container>
@@ -34,9 +45,16 @@ export default async function Dashboard() {
                 </tr>
             </thead>
             <tbody>
-                <Chamados />
+              {chamados.map(item => (
+                <Chamados key={item.id}  cliente={item.cliente} chamado={item}/>
+              ))}
+  
             </tbody>
         </table>
+
+        {chamados.length <= 0 && (
+          <h1 className="px-2 md:px-0 text-gray-600">Nenhum chamado encontrado</h1>
+        )} 
       </main>
     </Container>
   );

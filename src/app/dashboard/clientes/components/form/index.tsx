@@ -4,9 +4,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Input from "@/app/components/input";
+import { api } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 const schema = z.object({
-  nome: z.string().min(1, "O campo nome é obrigatório"),
+  name: z.string().min(1, "O campo nome é obrigatório"),
   email: z
     .string()
     .email("Digite um email valido")
@@ -26,7 +28,9 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-const FormClient = () => {
+const FormClient = ({ userId }: { userId: string }) => {
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -35,18 +39,31 @@ const FormClient = () => {
     resolver: zodResolver(schema),
   });
 
-  const cadastrarCliente = (data: FormData) => {
-    console.log(data)
-  }
+  const cadastrarCliente = async (data: FormData) => {
+    const payload = {
+      name: data.name,
+      phone: data.phone,
+      address: data.address,
+      email: data.email,
+      userId: userId,
+    };
+    await api.post("/api/clientes", payload);
+
+    // router.refresh();
+    router.replace("/dashboard/clientes");
+  };
 
   return (
-    <form className="flex flex-col mt-6" onSubmit={handleSubmit(cadastrarCliente)}>
+    <form
+      className="flex flex-col mt-6"
+      onSubmit={handleSubmit(cadastrarCliente)}
+    >
       <label className="mb-1 text-lg font-medium">Nome completo</label>
       <Input
         type="text"
-        name="nome"
+        name="name"
         placehoolder="Digite o nome completo"
-        error={errors.nome?.message}
+        error={errors.name?.message}
         register={register}
       />
       <div className="flex w-full gap-5 items-center justify-between my-5 flex-col sm:flex-row">
